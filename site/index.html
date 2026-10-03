@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tonalpowalli</title>
+<meta name="description" content="Convierte fechas entre el calendario gregoriano y el tonalpowalli, en la variante tlaxcalteca.">
+<meta name="author" content="Ignacio Pérez Barragán">
+<meta name="theme-color" content="#FFFFFF" id="metaTheme">
+<style>
+/* ── in tlilli in tlapalli ── negro y rojo, las dos tintas ── */
+:root{
+  --paper:#FFFFFF;
+  --soft:#F4F1EA;
+  --ink:#141210;
+  --rule:#141210;
+  --red:#C8201C;
+  --yellow:#F5C518;
+  --muted:#6B6560;
+  --glow:none;
+  --on-yellow:#141210;
+  --on-red:#FFFFFF;
+  color-scheme: light;
+}
+:root[data-theme="dark"]{
+  --paper:#08080A;
+  --soft:#16161A;
+  --ink:#F2F2F0;
+  --rule:#3A3A40;
+  --red:#FF2D55;
+  --yellow:#EEFF04;
+  --muted:#9A9AA0;
+  --glow:0 0 12px currentColor;
+  --on-yellow:#08080A;
+  --on-red:#08080A;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#08080A; --soft:#16161A; --ink:#F2F2F0; --rule:#3A3A40;
+    --red:#FF2D55; --yellow:#EEFF04; --muted:#9A9AA0;
+    --glow:0 0 12px currentColor; --on-yellow:#08080A; --on-red:#08080A;
+    color-scheme: dark;
+  }
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,ui-serif,serif;
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  transition:background-color .2s ease,color .2s ease}
+.wrap{max-width:62rem;margin:0 auto;padding:clamp(1.25rem,4vw,3rem) clamp(1rem,4vw,2rem) 4rem}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+/* ── encabezado ── */
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem 1.5rem;
+  align-items:flex-start;border-bottom:3px solid var(--rule);padding-bottom:1.25rem;margin-bottom:1.5rem}
+h1{font-size:clamp(2.1rem,6.5vw,3.4rem);line-height:1;margin:0 0 .45rem;font-weight:700;letter-spacing:-.02em}
+h1 .t{color:var(--red);text-shadow:var(--glow)}
+.lede{max-width:48ch;color:var(--muted);margin:0;font-size:1rem}
+.mandos{display:flex;flex-wrap:wrap;gap:.5rem;font-family:system-ui,-apple-system,sans-serif}
+.grupo{display:flex;border:2px solid var(--rule)}
+.grupo button{border:0;padding:.4rem .75rem;font-size:.82rem}
+.grupo button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+.borrador{font-family:system-ui,-apple-system,sans-serif;font-size:.85rem;
+  color:var(--on-yellow);background:var(--yellow);border:2px solid var(--rule);
+  padding:.55rem .8rem;margin:0 0 1.5rem}
+
+label.field{display:flex;flex-direction:column;gap:.3rem;
+  font-family:system-ui,-apple-system,sans-serif;font-size:.78rem;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+input,select{font-family:system-ui,-apple-system,sans-serif;font-size:1rem;
+  background:var(--paper);color:var(--ink);border:2px solid var(--rule);
+  border-radius:0;padding:.45rem .55rem}
+input[type=date]{min-width:11rem}
+input[type=number]{width:6.5rem}
+button{font-family:system-ui,-apple-system,sans-serif;font-size:.9rem;cursor:pointer;
+  background:var(--paper);color:var(--ink);border:2px solid var(--rule);
+  border-radius:0;padding:.45rem .8rem}
+button:hover{background:var(--ink);color:var(--paper)}
+button.primario{background:var(--red);border-color:var(--red);color:var(--on-red);font-weight:600}
+button.primario:hover{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+button.step{min-width:2.5rem;font-size:1.05rem;line-height:1.2}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+
+.control{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;margin:0 0 2rem}
+
+/* ── tonalli ── */
+.tonalli{display:grid;grid-template-columns:auto 1fr;gap:clamp(1rem,4vw,2.25rem);
+  align-items:center;border:3px solid var(--rule);padding:clamp(1rem,3vw,1.75rem);margin-bottom:1.75rem}
+.dots{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;width:max-content}
+.dot{width:1.05rem;height:1.05rem;border-radius:50%;border:2px solid var(--red);color:var(--red)}
+.dot.on{background:var(--red);box-shadow:var(--glow)}
+.glifo{font-size:clamp(2.3rem,7.5vw,3.8rem);line-height:1.02;margin:0;font-weight:700;letter-spacing:-.025em}
+.numeral{color:var(--red);text-shadow:var(--glow)}
+.fecha-larga{font-family:system-ui,-apple-system,sans-serif;font-size:.9rem;color:var(--muted);margin:.5rem 0 0}
+
+/* ── veintena ── */
+.veintena{margin:0 0 2rem}
+.veintena h2{font-family:system-ui,-apple-system,sans-serif;font-size:.78rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 .4rem}
+.veintena .nombre{font-size:1.5rem;margin:0 0 .7rem;font-weight:700}
+.slots{display:flex;gap:2px;height:1.6rem;border:2px solid var(--rule)}
+.slot{flex:1;background:var(--paper)}
+.slot.past{background:var(--soft)}
+.slot.now{background:var(--yellow);box-shadow:var(--glow);color:var(--yellow)}
+.slots.nem .slot.past{background:var(--soft)}
+.slots.nem .slot.now{background:var(--red);color:var(--red)}
+.meta{font-family:system-ui,-apple-system,sans-serif;font-size:.85rem;color:var(--muted);margin:.5rem 0 0}
+
+dl.datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1.25rem 2rem;
+  margin:0;padding-top:1.5rem;border-top:2px solid var(--rule)}
+dl.datos dt{font-family:system-ui,-apple-system,sans-serif;font-size:.75rem;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.15rem}
+dl.datos dd{margin:0;font-size:1.25rem;font-weight:600}
+.aviso{font-family:system-ui,-apple-system,sans-serif;font-size:.88rem;
+  background:var(--yellow);color:var(--on-yellow);border:2px solid var(--rule);
+  padding:.55rem .8rem;margin:1.25rem 0 0}
+
+section{border-top:3px solid var(--rule);padding-top:1.5rem;margin-top:2.5rem}
+section > h2{font-size:1.5rem;margin:0 0 .3rem;font-weight:700}
+section > p{color:var(--muted);margin:0 0 1.1rem;max-width:58ch;font-size:.96rem}
+
+.inversa{display:grid;gap:1.25rem;margin-bottom:1rem}
+.inversa fieldset{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:flex-end}
+.inversa legend{font-family:system-ui,-apple-system,sans-serif;font-size:.8rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--red);padding:0;margin-bottom:.45rem}
+.inversa select{min-width:9rem}
+.acciones{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end}
+.salida{font-family:system-ui,-apple-system,sans-serif;font-size:.88rem;margin:.9rem 0 0;
+  min-height:1.2rem;max-width:62ch}
+.salida.error{color:var(--red);font-weight:600}
+ol.resultados{list-style:none;padding:0;margin:1rem 0 0}
+ol.resultados:not(:empty){border-top:2px solid var(--rule)}
+ol.resultados li{border-bottom:1px solid var(--rule)}
+ol.resultados button{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;
+  grid-template-columns:minmax(12rem,1fr) 2fr;gap:.2rem 1.5rem;padding:.65rem .5rem}
+ol.resultados button:hover{background:var(--soft)}
+ol.resultados button:hover .rf{color:var(--red)}
+ol.resultados button:focus-visible{outline:3px solid var(--red);outline-offset:-3px}
+.rf{font-size:1.05rem;font-weight:600}
+.rr{font-family:system-ui,-apple-system,sans-serif;font-size:.86rem;color:var(--muted);align-self:center}
+.rr .tag{color:var(--red);font-weight:600}
+@media (max-width:34rem){ol.resultados button{grid-template-columns:1fr}}
+
+.rango{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end}
+
+.signos{list-style:none;padding:0;margin:0;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:.3rem .9rem}
+.signos li{font-size:.98rem;display:flex;gap:.5rem;padding:.1rem .25rem}
+.signos .n{font-family:system-ui,-apple-system,sans-serif;font-size:.8rem;color:var(--muted);
+  font-variant-numeric:tabular-nums;min-width:1.4rem;text-align:right;align-self:center}
+.signos li.hit{background:var(--yellow)}
+.signos li.hit .s{color:var(--on-yellow);font-weight:700}
+.signos li.hit .n{color:var(--on-yellow)}
+
+footer .credito{color:var(--ink);font-size:.95rem;border-left:3px solid var(--red);
+  padding-left:.8rem;margin:0 0 1.1rem}
+footer .credito strong{font-weight:700}
+footer{border-top:3px solid var(--rule);margin-top:3rem;padding-top:1.25rem;
+  font-family:system-ui,-apple-system,sans-serif;font-size:.84rem;color:var(--muted);max-width:60ch}
+@media (max-width:30rem){.tonalli{grid-template-columns:1fr;gap:1.1rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1><span class="t">To</span>nalpowalli</h1>
+    <p class="lede" data-t="lede"></p>
+  </div>
+  <div class="mandos">
+    <div class="grupo" role="group" aria-label="Idioma / Tlahtolli">
+      <button type="button" data-lang="es" aria-pressed="true">Español</button>
+      <button type="button" data-lang="nah" aria-pressed="false">Nawatl</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
+    </div>
+    <div class="grupo">
+      <button type="button" id="tema" data-t-aria="temaAria"></button>
+    </div>
+  </div>
+</header>
+
+<p class="borrador" id="borrador" hidden>Borrador de traducción al nawatl tlaxcalteca, pendiente de revisión.
+Los textos sin traducir aparecen en español.</p>
+
+<div class="control">
+  <label class="field"><span data-t="fechaGreg"></span>
+    <input type="date" id="fecha" value="2026-03-12" min="1583-01-01" max="2400-12-31">
+  </label>
+  <button type="button" class="step" id="prev" data-t-aria="prev">−</button>
+  <button type="button" class="step" id="next" data-t-aria="next">+</button>
+  <button type="button" id="hoy" data-t="hoy"></button>
+</div>
+
+<div class="tonalli">
+  <div class="dots" id="puntos" role="img"></div>
+  <div>
+    <p class="glifo"><span class="numeral" id="num"></span> <span id="signo"></span></p>
+    <p class="fecha-larga" id="larga"></p>
+  </div>
+</div>
+
+<div class="veintena">
+  <h2 data-t="veintena"></h2>
+  <p class="nombre" id="veinNombre"></p>
+  <div class="slots" id="slots"></div>
+  <p class="meta" id="veinMeta"></p>
+</div>
+
+<dl class="datos">
+  <div><dt data-t="xiwitl"></dt><dd id="anio"></dd></div>
+  <div><dt data-t="diaAnio"></dt><dd id="diaAnio"></dd></div>
+  <div><dt data-t="portador"></dt><dd id="portador"></dd></div>
+</dl>
+<p class="aviso" id="aviso" hidden></p>
+
+<section id="inversa">
+  <h2 data-t="invH"></h2>
+  <p data-t="invP"></p>
+  <div class="inversa">
+    <fieldset>
+      <legend data-t="grpTonalli"></legend>
+      <label class="field"><span data-t="numeral"></span><select id="rNum"></select></label>
+      <label class="field"><span data-t="signoL"></span><select id="rSigno"></select></label>
+    </fieldset>
+    <fieldset>
+      <legend data-t="grpVeintena"></legend>
+      <label class="field"><span data-t="veintena"></span><select id="rVein"></select></label>
+      <label class="field"><span data-t="diaVein"></span><select id="rDia"></select></label>
+    </fieldset>
+    <fieldset>
+      <legend data-t="grpXiwitl"></legend>
+      <label class="field"><span data-t="numeral"></span><select id="rANum"></select></label>
+      <label class="field"><span data-t="portador"></span><select id="rPort"></select></label>
+    </fieldset>
+    <fieldset>
+      <legend data-t="grpRango"></legend>
+      <label class="field"><span data-t="desdeAnio"></span><input type="number" id="rDesde" min="1583" max="2400"></label>
+      <label class="field"><span data-t="hastaAnio"></span><input type="number" id="rHasta" min="1583" max="2400"></label>
+    </fieldset>
+  </div>
+  <div class="acciones">
+    <button type="button" class="primario" id="buscar" data-t="buscar"></button>
+    <button type="button" id="limpiar" data-t="limpiar"></button>
+  </div>
+  <p class="salida" id="rSalida" role="status"></p>
+  <ol class="resultados" id="rLista"></ol>
+</section>
+
+<section>
+  <h2 data-t="expH"></h2>
+  <p data-t="expP"></p>
+  <div class="rango">
+    <label class="field"><span data-t="desde"></span><input type="date" id="desde" value="2026-03-12"></label>
+    <label class="field"><span data-t="hasta"></span><input type="date" id="hasta" value="2027-03-11"></label>
+    <button type="button" id="descargar" data-t="descargar"></button>
+  </div>
+  <p class="salida" id="salida" role="status"></p>
+</section>
+
+<section>
+  <h2 data-t="sigH"></h2>
+  <p data-t="sigP"></p>
+  <ol class="signos" id="listaSignos"></ol>
+</section>
+
+<footer>
+  <p class="credito"><span data-t="creditoLabel"></span> <strong>Ignacio Pérez Barragán</strong></p>
+  <p data-t="pie1"></p>
+  <p data-t="pie2"></p>
+</footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ================= núcleo ================= */
+const SIGNOS = ["Sipaktli","Ehekatl","Kalli","Kwetspalin","Koatl","Mikistli",
+  "Masatl","Tochtli","Atl","Itskwintli","Osomahtli","Malinalli","Akatl","Oselotl",
+  "Kwawtli","Koskakwawtli","Olin","Tekpatl","Kiawitl","Xochitl"];
+const VEINTENAS = ["Xilomanilistli","Koailwitl","Tosostontli","Weyi Tosostli",
+  "Toxkatl","Yetsakwalistli","Tekoilwitontli","Weyi Tekoilwitl","Mikailwitontli",
+  "Weyi Mikailwitl","Ochpanistli","Pachtontli","Weyi Pachtli","Kecholli",
+  "Panketsalistli","Atemostli","Tititl","Iskalli"];
+const PORTADORES = ["Tochtli","Akatl","Tekpatl","Kalli"];
+const ANIO_ANCLA = 2026, SIGNO_ANCLA = 7, DIA = 86400000;
+const utc = (y,m,d) => Date.UTC(y, m-1, d);
+const mod = (n,m) => ((n % m) + m) % m;
+const bisiesto = y => y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+
+function anioRitualDe(ms){
+  const d = new Date(ms), y = d.getUTCFullYear(), mes = d.getUTCMonth()+1;
+  return (mes < 3 || (mes === 3 && d.getUTCDate() < 12)) ? y-1 : y;
+}
+function posicionEnAnio(ms){
+  const yr = anioRitualDe(ms), sig = yr+1;
+  let n = Math.round((ms - utc(yr,3,12)) / DIA);
+  if (bisiesto(sig) && ms >= utc(sig,2,29)) n -= 1;
+  return n;
+}
+function convertir(ms){
+  const p = posicionEnAnio(ms), yr = anioRitualDe(ms), idx = yr - ANIO_ANCLA;
+  const total = 365*idx + p, d = new Date(ms), nem = p >= 360;
+  return {
+    ms, fecha: d.toISOString().slice(0,10),
+    anioNumeral: mod(idx,13)+1, anioSigno: PORTADORES[mod(idx,4)],
+    diaNumeral: mod(total,13)+1, diaSigno: SIGNOS[mod(SIGNO_ANCLA+total,20)],
+    veintena: nem ? "Nemontemi" : VEINTENAS[Math.floor(p/20)],
+    veintenaIdx: nem ? 18 : Math.floor(p/20),
+    diaDeVeintena: nem ? p-359 : (p%20)+1,
+    duracion: nem ? 5 : 20, diaDelAnio: p+1, esNemontemi: nem,
+    bisiestoRepetido: d.getUTCMonth() === 1 && d.getUTCDate() === 29,
+  };
+}
+function buscar(f, anioDesde, anioHasta){
+  const out = [];
+  for (let ms = utc(anioDesde,1,1), fin = utc(anioHasta,12,31); ms <= fin; ms += DIA){
+    const c = convertir(ms);
+    if (f.num   != null && c.diaNumeral    !== f.num)   continue;
+    if (f.signo != null && c.diaSigno      !== f.signo) continue;
+    if (f.vein  != null && c.veintenaIdx   !== f.vein)  continue;
+    if (f.dia   != null && c.diaDeVeintena !== f.dia)   continue;
+    if (f.anum  != null && c.anioNumeral   !== f.anum)  continue;
+    if (f.port  != null && c.anioSigno     !== f.port)  continue;
+    out.push(c);
+  }
+  return out;
+}
+const parseISO = s => { const [y,m,d] = s.split("-").map(Number); return utc(y,m,d); };
+
+/* ================= textos ================= */
+const BORRADOR_NAWATL = true;
+const T = {
+es: {
+  lede: "Convierte fechas entre el calendario gregoriano y el tonalpowalli: el tonalli del día, su lugar en la veintena y el xiwitl que lo contiene.",
+  fechaGreg: "Fecha gregoriana", prev: "Día anterior", next: "Día siguiente", hoy: "Ver hoy",
+  veintena: "Veintena", diaDe: "Día {d} de {n}", nemNota: " — días sobrantes del xiwitl",
+  xiwitl: "Xiwitl", diaAnio: "Día del xiwitl", diaAnioVal: "{p} de 365", portador: "Portador",
+  bisiesto: "Día bisiesto: repite el tonalli del día anterior y no avanza la cuenta.",
+  puntos: "numeral {n} de 13",
+  temaAria: "Cambiar tema", temaAuto: "Tema: auto", temaClaro: "Tema: claro", temaOscuro: "Tema: oscuro",
+  invH: "Del tonalpowalli al gregoriano",
+  invP: "Elige lo que sepas de la fecha. Con sólo el tonalli, la fecha se repite cada 260 días; con tonalli y posición en la veintena, una vez cada 52 años.",
+  grpTonalli: "Tonalli", grpVeintena: "Veintena", grpXiwitl: "Xiwitl", grpRango: "Buscar entre",
+  numeral: "Numeral", signoL: "Signo", diaVein: "Día", cualquiera: "—",
+  desdeAnio: "Desde el año", hastaAnio: "Hasta el año",
+  buscar: "Buscar fechas", limpiar: "Limpiar",
+  faltaDato: "Elige al menos un dato.",
+  rangoMal: "El rango debe ir de 1583 a 2400, con el año final después del inicial y no más de 500 años.",
+  diaNem: "Nemontemi sólo tiene 5 días.",
+  hallados: "{n} fechas encontradas.", halladosMas: "{n} fechas encontradas; se muestran las {m} más cercanas a hoy.",
+  uno: "1 fecha encontrada.",
+  ninguna: "Ninguna fecha cumple esa combinación en el rango. Algunas combinaciones no existen: el signo del día queda fijado por la posición en la veintena y el portador del xiwitl. Si la combinación es posible, amplía el rango.",
+  tagBis: "bisiesto",
+  expH: "Exportar un rango",
+  expP: "Genera la correlación día por día entre dos fechas y descárgala como CSV.",
+  desde: "Desde", hasta: "Hasta", descargar: "Descargar CSV",
+  expDos: "Elige las dos fechas.", expOrden: "La fecha final es anterior a la inicial.",
+  expGrande: "El rango excede 200 000 días.", expListo: "{n} días exportados.",
+  sigH: "Los veinte signos",
+  sigP: "La cuenta avanza un signo cada día y vuelve al principio cada veinte. El signo del día elegido aparece resaltado.",
+  creditoLabel: "Investigación, reconstrucción de la cuenta y corrección:",
+  pie1: "La cuenta reproducida aquí fija el 12 de marzo de 2026 como 1 Tochtli, con el xiwitl comenzando siempre el 12 de marzo y el 29 de febrero repitiendo el tonalli anterior. Existen otras correlaciones —Caso, Jiménez Moreno, Tena— y cuentas vivas en Tlaxcala y Milpa Alta que no coinciden entre sí. Esta página reproduce la de Ignacio Pérez Barragán; no zanja cuál es la correcta.",
+  pie2: "Las fechas se calculan en calendario gregoriano; por eso el rango empieza en 1583.",
+  dias: ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],
+  meses: ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"],
+},
+en: {
+  lede: "Convert dates between the Gregorian calendar and the tonalpowalli: the day's tonalli, its place in the veintena, and the xiwitl that contains it.",
+  fechaGreg: "Gregorian date", prev: "Previous day", next: "Next day", hoy: "Show today",
+  veintena: "Veintena", diaDe: "Day {d} of {n}", nemNota: " — days left over from the xiwitl",
+  xiwitl: "Xiwitl", diaAnio: "Day of the xiwitl", diaAnioVal: "{p} of 365", portador: "Year bearer",
+  bisiesto: "Leap day: it repeats the previous day's tonalli and does not advance the count.",
+  puntos: "numeral {n} of 13",
+  temaAria: "Change theme", temaAuto: "Theme: auto", temaClaro: "Theme: light", temaOscuro: "Theme: dark",
+  invH: "From tonalpowalli to Gregorian",
+  invP: "Enter whatever you know about the date. With only the tonalli, the date recurs every 260 days; with the tonalli and a position in the veintena, once every 52 years.",
+  grpTonalli: "Tonalli", grpVeintena: "Veintena", grpXiwitl: "Xiwitl", grpRango: "Search between",
+  numeral: "Numeral", signoL: "Sign", diaVein: "Day", cualquiera: "—",
+  desdeAnio: "From year", hastaAnio: "To year",
+  buscar: "Search dates", limpiar: "Clear",
+  faltaDato: "Choose at least one field.",
+  rangoMal: "The range must fall between 1583 and 2400, end after it starts, and span no more than 500 years.",
+  diaNem: "Nemontemi has only 5 days.",
+  hallados: "{n} dates found.", halladosMas: "{n} dates found; showing the {m} closest to today.",
+  uno: "1 date found.",
+  ninguna: "No date matches that combination in this range. Some combinations cannot exist: the day sign is fixed by the position in the veintena together with the year bearer. If the combination is possible, widen the range.",
+  tagBis: "leap day",
+  expH: "Export a range",
+  expP: "Generate the day-by-day correlation between two dates and download it as CSV.",
+  desde: "From", hasta: "To", descargar: "Download CSV",
+  expDos: "Choose both dates.", expOrden: "The end date comes before the start date.",
+  expGrande: "The range exceeds 200,000 days.", expListo: "{n} days exported.",
+  sigH: "The twenty signs",
+  sigP: "The count advances one sign each day and returns to the start every twenty. The sign for the chosen day is highlighted.",
+  creditoLabel: "Calendrical research and reconstruction:",
+  pie1: "The count reproduced here fixes 12 March 2026 as 1 Tochtli, with the xiwitl always beginning on 12 March and 29 February repeating the previous tonalli. Other correlations exist —Caso, Jiménez Moreno, Tena— along with living counts in Tlaxcala and Milpa Alta that do not agree with one another. This page reproduces the one by Ignacio Pérez Barragán; it does not settle which is correct.",
+  pie2: "Dates are computed in the Gregorian calendar, which is why the range starts in 1583.",
+  dias: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+  meses: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+},
+nah: {
+  fechaGreg: "Tonalli (gregoriano)",
+  prev: "Tonalli achtopa", next: "Tonalli satepan", hoy: "Axkan",
+  veintena: "Sempowalli", diaDe: "{d} ipan {n}",
+  xiwitl: "Xiwitl", diaAnio: "Tonalli ipan xiwitl", diaAnioVal: "{p} ipan 365",
+  portador: "Xiwtonalli",
+  grpTonalli: "Tonalli", grpVeintena: "Sempowalli", grpXiwitl: "Xiwitl",
+  numeral: "Tlapowalli", signoL: "Itoka", diaVein: "Tonalli",
+  buscar: "Xiktemo", limpiar: "Xikpopowa",
+  desde: "Kampa pewa", hasta: "Kampa tlami",
+},
+};
+
+/* ================= interfaz ================= */
+let lang = "es";
+let tema = "auto";
+try {
+  const gl = localStorage.getItem("tonalpowalli-lang");
+  if (gl === "nah" || gl === "en") lang = gl;
+  const g = localStorage.getItem("tonalpowalli-tema");
+  if (g === "claro" || g === "oscuro") tema = g;
+} catch(e) {}
+
+const t = (k, v={}) => {
+  const s = (T[lang] && T[lang][k] != null) ? T[lang][k] : T.es[k];
+  return typeof s === "string" ? s.replace(/\{(\w+)\}/g, (_, x) => v[x]) : s;
+};
+const larga = ms => {
+  const d = new Date(ms), L = lang === "en" ? T.en : T.es;
+  return lang === "en"
+    ? `${L.dias[d.getUTCDay()]}, ${L.meses[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
+    : `${L.dias[d.getUTCDay()]} ${d.getUTCDate()} de ${L.meses[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
+};
+const locale = () => lang === "en" ? "en-US" : "es-MX";
+const $ = id => document.getElementById(id);
+
+function aplicarTema(){
+  const raiz = document.documentElement;
+  if (tema === "auto") raiz.removeAttribute("data-theme");
+  else raiz.setAttribute("data-theme", tema === "oscuro" ? "dark" : "light");
+  $("tema").textContent = t(tema === "auto" ? "temaAuto" : tema === "claro" ? "temaClaro" : "temaOscuro");
+  const oscuro = tema === "oscuro" ||
+    (tema === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const meta = $("metaTheme"); if (meta) meta.setAttribute("content", oscuro ? "#08080A" : "#FFFFFF");
+}
+$("tema").addEventListener("click", () => {
+  tema = tema === "auto" ? "claro" : tema === "claro" ? "oscuro" : "auto";
+  try { localStorage.setItem("tonalpowalli-tema", tema); } catch(e) {}
+  aplicarTema();
+});
+
+function opciones(sel, items){
+  sel.replaceChildren(new Option(t("cualquiera"), ""));
+  items.forEach(([v, txt]) => sel.add(new Option(txt, v)));
+}
+function llenarSelects(){
+  const ids = ["rNum","rSigno","rVein","rDia","rANum","rPort"];
+  const keep = ids.map(id => $(id).value);
+  const n13 = Array.from({length:13}, (_,i) => [i+1, i+1]);
+  opciones($("rNum"), n13);
+  opciones($("rSigno"), SIGNOS.map(s => [s, s]));
+  opciones($("rVein"), [...VEINTENAS, "Nemontemi"].map((v,i) => [i, v]));
+  opciones($("rDia"), Array.from({length:20}, (_,i) => [i+1, i+1]));
+  opciones($("rANum"), n13);
+  opciones($("rPort"), PORTADORES.map(s => [s, s]));
+  ids.forEach((id, i) => { $(id).value = keep[i]; });
+  limitarDias();
+}
+function limitarDias(){
+  const nem = $("rVein").value === "18";
+  [...$("rDia").options].forEach(o => { if (o.value) o.disabled = nem && Number(o.value) > 5; });
+  if (nem && Number($("rDia").value) > 5) $("rDia").value = "";
+}
+
+let actual = utc(2026,3,12);
+let ultimaBusqueda = null;
+
+function aplicarIdioma(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll("[data-t-aria]").forEach(el => el.setAttribute("aria-label", t(el.dataset.tAria)));
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  $("borrador").hidden = !(lang === "nah" && BORRADOR_NAWATL);
+  aplicarTema();
+  llenarSelects();
+  pintar(actual);
+  if (ultimaBusqueda) mostrarResultados(ultimaBusqueda);
+}
+
+SIGNOS.forEach((s,i) => {
+  const li = document.createElement("li");
+  li.innerHTML = `<span class="n">${i+1}</span><span class="s">${s}</span>`;
+  $("listaSignos").appendChild(li);
+});
+
+function pintar(ms){
+  const c = convertir(ms);
+  const pts = $("puntos"); pts.replaceChildren();
+  for (let i = 1; i <= 13; i++){
+    const d = document.createElement("span");
+    d.className = "dot" + (i <= c.diaNumeral ? " on" : "");
+    pts.appendChild(d);
+  }
+  pts.setAttribute("aria-label", t("puntos", {n: c.diaNumeral}));
+  $("num").textContent = c.diaNumeral;
+  $("signo").textContent = c.diaSigno;
+  $("larga").textContent = larga(ms);
+
+  $("veinNombre").textContent = c.veintena;
+  const sl = $("slots"); sl.className = "slots" + (c.esNemontemi ? " nem" : ""); sl.replaceChildren();
+  for (let i = 1; i <= c.duracion; i++){
+    const s = document.createElement("span");
+    s.className = "slot" + (i < c.diaDeVeintena ? " past" : i === c.diaDeVeintena ? " now" : "");
+    sl.appendChild(s);
+  }
+  $("veinMeta").textContent = t("diaDe", {d: c.diaDeVeintena, n: c.duracion}) + (c.esNemontemi ? t("nemNota") : "");
+  $("anio").textContent = `${c.anioNumeral} ${c.anioSigno}`;
+  $("diaAnio").textContent = t("diaAnioVal", {p: c.diaDelAnio});
+  $("portador").textContent = c.anioSigno;
+
+  const av = $("aviso"); av.hidden = !c.bisiestoRepetido;
+  if (c.bisiestoRepetido) av.textContent = t("bisiesto");
+
+  [...$("listaSignos").children].forEach((li,i) => li.classList.toggle("hit", SIGNOS[i] === c.diaSigno));
+
+  if ($("fecha").value !== c.fecha) $("fecha").value = c.fecha;
+  if (location.hash.slice(1) !== c.fecha) history.replaceState(null, "", "#" + c.fecha);
+  document.title = `${c.diaNumeral} ${c.diaSigno} — Tonalpowalli`;
+}
+const ir = ms => { actual = ms; pintar(actual); };
+const hoyMs = () => { const n = new Date(); return utc(n.getFullYear(), n.getMonth()+1, n.getDate()); };
+
+$("fecha").addEventListener("change", () => { if ($("fecha").value) ir(parseISO($("fecha").value)); });
+$("prev").addEventListener("click", () => ir(actual - DIA));
+$("next").addEventListener("click", () => ir(actual + DIA));
+$("hoy").addEventListener("click", () => ir(hoyMs()));
+document.addEventListener("keydown", e => {
+  if (["INPUT","SELECT","TEXTAREA","BUTTON"].includes(e.target.tagName) || e.metaKey || e.ctrlKey) return;
+  if (e.key === "ArrowLeft") ir(actual - DIA);
+  if (e.key === "ArrowRight") ir(actual + DIA);
+});
+document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  try { localStorage.setItem("tonalpowalli-lang", lang); } catch(e) {}
+  aplicarIdioma();
+}));
+
+const valNum = id => $(id).value === "" ? null : Number($(id).value);
+const valTxt = id => $(id).value === "" ? null : $(id).value;
+function salidaInv(msg, error){ const s = $("rSalida"); s.textContent = msg; s.classList.toggle("error", !!error); }
+
+$("rVein").addEventListener("change", limitarDias);
+$("buscar").addEventListener("click", () => {
+  const f = { num: valNum("rNum"), signo: valTxt("rSigno"), vein: valNum("rVein"),
+              dia: valNum("rDia"), anum: valNum("rANum"), port: valTxt("rPort") };
+  $("rLista").replaceChildren(); ultimaBusqueda = null;
+  if (Object.values(f).every(v => v == null)) return salidaInv(t("faltaDato"), true);
+  if (f.vein === 18 && f.dia != null && f.dia > 5) return salidaInv(t("diaNem"), true);
+  const a = Number($("rDesde").value), b = Number($("rHasta").value);
+  if (!(a >= 1583 && b <= 2400 && b >= a && b - a <= 500)) return salidaInv(t("rangoMal"), true);
+  ultimaBusqueda = buscar(f, a, b);
+  mostrarResultados(ultimaBusqueda);
+});
+$("limpiar").addEventListener("click", () => {
+  ["rNum","rSigno","rVein","rDia","rANum","rPort"].forEach(id => { $(id).value = ""; });
+  limitarDias(); $("rLista").replaceChildren(); salidaInv(""); ultimaBusqueda = null;
+});
+
+function mostrarResultados(res){
+  const MAX = 60, lista = $("rLista"); lista.replaceChildren();
+  if (!res.length) return salidaInv(t("ninguna"), true);
+  const h = hoyMs();
+  const vis = res.length > MAX
+    ? [...res].sort((x,y) => Math.abs(x.ms-h) - Math.abs(y.ms-h)).slice(0, MAX).sort((x,y) => x.ms - y.ms)
+    : res;
+  salidaInv(res.length === 1 ? t("uno")
+          : res.length > MAX ? t("halladosMas", {n: res.length.toLocaleString(locale()), m: MAX})
+          : t("hallados", {n: res.length}));
+  for (const c of vis){
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button";
+    const rf = document.createElement("span"); rf.className = "rf"; rf.textContent = larga(c.ms);
+    const rr = document.createElement("span"); rr.className = "rr";
+    rr.textContent = `${c.diaNumeral} ${c.diaSigno}, ${c.veintena} ${c.diaDeVeintena}, ${t("xiwitl").toLowerCase()} ${c.anioNumeral} ${c.anioSigno}`;
+    if (c.bisiestoRepetido){ const g = document.createElement("span"); g.className = "tag"; g.textContent = ` (${t("tagBis")})`; rr.appendChild(g); }
+    b.append(rf, rr);
+    b.addEventListener("click", () => { ir(c.ms); window.scrollTo({top: 0, behavior: "smooth"}); });
+    li.appendChild(b); lista.appendChild(li);
+  }
+}
+
+$("descargar").addEventListener("click", () => {
+  const a = $("desde").value, b = $("hasta").value, s = $("salida");
+  if (!a || !b) { s.textContent = t("expDos"); return; }
+  const ini = parseISO(a), fin = parseISO(b);
+  if (fin < ini) { s.textContent = t("expOrden"); return; }
+  const n = Math.round((fin - ini)/DIA) + 1;
+  if (n > 200000) { s.textContent = t("expGrande"); return; }
+  const filas = ["fecha,anio_numeral,anio_signo,dia_numeral,dia_signo,veintena,dia_de_veintena,dia_del_anio"];
+  for (let ms = ini; ms <= fin; ms += DIA){
+    const c = convertir(ms);
+    filas.push([c.fecha,c.anioNumeral,c.anioSigno,c.diaNumeral,c.diaSigno,c.veintena,c.diaDeVeintena,c.diaDelAnio].join(","));
+  }
+  const blob = new Blob(["\uFEFF" + filas.join("\n") + "\n"], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const link = Object.assign(document.createElement("a"),
+    {href:url, download:`tonalpowalli_${a.replaceAll("-","")}_${b.replaceAll("-","")}.csv`});
+  link.click(); URL.revokeObjectURL(url);
+  s.textContent = t("expListo", {n: n.toLocaleString(locale())});
+});
+
+const y0 = new Date().getFullYear();
+$("rDesde").value = Math.max(1583, y0 - 52);
+$("rHasta").value = Math.min(2400, y0 + 52);
+const hh = location.hash.slice(1);
+actual = /^\d{4}-\d{2}-\d{2}$/.test(hh) ? parseISO(hh) : hoyMs();
+aplicarIdioma();
+})();
+</script>
+</body>
+</html>

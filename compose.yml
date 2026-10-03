@@ -1,0 +1,45 @@
+# Tonalpowalli — sitio estático detrás de Cloudflare Tunnel.
+# No publica ningún puerto en el host: no choca con el nginx de OpenMediaVault.
+
+name: tonalpowalli
+
+services:
+  web:
+    image: caddy:${CADDY_TAG:-2.11-alpine}
+    restart: unless-stopped
+    volumes:
+      - ${SITE_DIR:-./site}:/srv:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [tunel]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]   # el binario de caddy trae esta file capability
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    # Solo para probar en la LAN; déjalo comentado en producción.
+    # ports:
+    #   - "8088:8080"
+
+  tunnel:
+    image: cloudflare/cloudflared:${CLOUDFLARED_TAG:-latest}
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Falta TUNNEL_TOKEN en .env}
+    networks: [tunel]
+    depends_on:
+      web:
+        condition: service_healthy
+    security_opt: ["no-new-privileges:true"]
+
+networks:
+  tunel:
+
+volumes:
+  caddy_data:
+  caddy_config:

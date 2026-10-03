@@ -1,0 +1,25 @@
+{
+	# TLS lo termina Cloudflare en el edge; el túnel ya va cifrado.
+	auto_https off
+	admin off
+}
+
+:8080 {
+	root * /srv
+	encode zstd gzip
+
+	respond /healthz 200
+
+	header {
+		Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "geolocation=(), camera=(), microphone=()"
+		-Server
+	}
+
+	@html path / *.html
+	header @html Cache-Control "public, max-age=300"
+
+	file_server
+}
