@@ -276,6 +276,9 @@ Los textos sin traducir aparecen en español.</p>
 </footer>
 </div>
 
+<script src="i18n/es.js"></script>
+<script src="i18n/en.js"></script>
+<script src="i18n/nah.js"></script>
 <script>
 (() => {
 "use strict";
@@ -334,89 +337,10 @@ function buscar(f, anioDesde, anioHasta){
 }
 const parseISO = s => { const [y,m,d] = s.split("-").map(Number); return utc(y,m,d); };
 
-/* ================= textos ================= */
-const BORRADOR_NAWATL = true;
-const T = {
-es: {
-  lede: "Convierte fechas entre el calendario gregoriano y el tonalpowalli: el tonalli del día, su lugar en la veintena y el xiwitl que lo contiene.",
-  fechaGreg: "Fecha gregoriana", prev: "Día anterior", next: "Día siguiente", hoy: "Ver hoy",
-  veintena: "Veintena", diaDe: "Día {d} de {n}", nemNota: " — días sobrantes del xiwitl",
-  xiwitl: "Xiwitl", diaAnio: "Día del xiwitl", diaAnioVal: "{p} de 365", portador: "Portador",
-  bisiesto: "Día bisiesto: repite el tonalli del día anterior y no avanza la cuenta.",
-  puntos: "numeral {n} de 13",
-  temaAria: "Cambiar tema", temaAuto: "Tema: auto", temaClaro: "Tema: claro", temaOscuro: "Tema: oscuro",
-  invH: "Del tonalpowalli al gregoriano",
-  invP: "Elige lo que sepas de la fecha. Con sólo el tonalli, la fecha se repite cada 260 días; con tonalli y posición en la veintena, una vez cada 52 años.",
-  grpTonalli: "Tonalli", grpVeintena: "Veintena", grpXiwitl: "Xiwitl", grpRango: "Buscar entre",
-  numeral: "Numeral", signoL: "Signo", diaVein: "Día", cualquiera: "—",
-  desdeAnio: "Desde el año", hastaAnio: "Hasta el año",
-  buscar: "Buscar fechas", limpiar: "Limpiar",
-  faltaDato: "Elige al menos un dato.",
-  rangoMal: "El rango debe ir de 1583 a 2400, con el año final después del inicial y no más de 500 años.",
-  diaNem: "Nemontemi sólo tiene 5 días.",
-  hallados: "{n} fechas encontradas.", halladosMas: "{n} fechas encontradas; se muestran las {m} más cercanas a hoy.",
-  uno: "1 fecha encontrada.",
-  ninguna: "Ninguna fecha cumple esa combinación en el rango. Algunas combinaciones no existen: el signo del día queda fijado por la posición en la veintena y el portador del xiwitl. Si la combinación es posible, amplía el rango.",
-  tagBis: "bisiesto",
-  expH: "Exportar un rango",
-  expP: "Genera la correlación día por día entre dos fechas y descárgala como CSV.",
-  desde: "Desde", hasta: "Hasta", descargar: "Descargar CSV",
-  expDos: "Elige las dos fechas.", expOrden: "La fecha final es anterior a la inicial.",
-  expGrande: "El rango excede 200 000 días.", expListo: "{n} días exportados.",
-  sigH: "Los veinte signos",
-  sigP: "La cuenta avanza un signo cada día y vuelve al principio cada veinte. El signo del día elegido aparece resaltado.",
-  creditoLabel: "Investigación, reconstrucción de la cuenta y corrección:",
-  pie1: "La cuenta reproducida aquí fija el 12 de marzo de 2026 como 1 Tochtli, con el xiwitl comenzando siempre el 12 de marzo y el 29 de febrero repitiendo el tonalli anterior. Existen otras correlaciones —Caso, Jiménez Moreno, Tena— y cuentas vivas en Tlaxcala y Milpa Alta que no coinciden entre sí. Esta página reproduce la de Ignacio Pérez Barragán; no zanja cuál es la correcta.",
-  pie2: "Las fechas se calculan en calendario gregoriano; por eso el rango empieza en 1583.",
-  dias: ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],
-  meses: ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"],
-},
-en: {
-  lede: "Convert dates between the Gregorian calendar and the tonalpowalli: the day's tonalli, its place in the veintena, and the xiwitl that contains it.",
-  fechaGreg: "Gregorian date", prev: "Previous day", next: "Next day", hoy: "Show today",
-  veintena: "Veintena", diaDe: "Day {d} of {n}", nemNota: " — days left over from the xiwitl",
-  xiwitl: "Xiwitl", diaAnio: "Day of the xiwitl", diaAnioVal: "{p} of 365", portador: "Year bearer",
-  bisiesto: "Leap day: it repeats the previous day's tonalli and does not advance the count.",
-  puntos: "numeral {n} of 13",
-  temaAria: "Change theme", temaAuto: "Theme: auto", temaClaro: "Theme: light", temaOscuro: "Theme: dark",
-  invH: "From tonalpowalli to Gregorian",
-  invP: "Enter whatever you know about the date. With only the tonalli, the date recurs every 260 days; with the tonalli and a position in the veintena, once every 52 years.",
-  grpTonalli: "Tonalli", grpVeintena: "Veintena", grpXiwitl: "Xiwitl", grpRango: "Search between",
-  numeral: "Numeral", signoL: "Sign", diaVein: "Day", cualquiera: "—",
-  desdeAnio: "From year", hastaAnio: "To year",
-  buscar: "Search dates", limpiar: "Clear",
-  faltaDato: "Choose at least one field.",
-  rangoMal: "The range must fall between 1583 and 2400, end after it starts, and span no more than 500 years.",
-  diaNem: "Nemontemi has only 5 days.",
-  hallados: "{n} dates found.", halladosMas: "{n} dates found; showing the {m} closest to today.",
-  uno: "1 date found.",
-  ninguna: "No date matches that combination in this range. Some combinations cannot exist: the day sign is fixed by the position in the veintena together with the year bearer. If the combination is possible, widen the range.",
-  tagBis: "leap day",
-  expH: "Export a range",
-  expP: "Generate the day-by-day correlation between two dates and download it as CSV.",
-  desde: "From", hasta: "To", descargar: "Download CSV",
-  expDos: "Choose both dates.", expOrden: "The end date comes before the start date.",
-  expGrande: "The range exceeds 200,000 days.", expListo: "{n} days exported.",
-  sigH: "The twenty signs",
-  sigP: "The count advances one sign each day and returns to the start every twenty. The sign for the chosen day is highlighted.",
-  creditoLabel: "Calendrical research and reconstruction:",
-  pie1: "The count reproduced here fixes 12 March 2026 as 1 Tochtli, with the xiwitl always beginning on 12 March and 29 February repeating the previous tonalli. Other correlations exist —Caso, Jiménez Moreno, Tena— along with living counts in Tlaxcala and Milpa Alta that do not agree with one another. This page reproduces the one by Ignacio Pérez Barragán; it does not settle which is correct.",
-  pie2: "Dates are computed in the Gregorian calendar, which is why the range starts in 1583.",
-  dias: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
-  meses: ["January","February","March","April","May","June","July","August","September","October","November","December"],
-},
-nah: {
-  fechaGreg: "Tonalli (gregoriano)",
-  prev: "Tonalli achtopa", next: "Tonalli satepan", hoy: "Axkan",
-  veintena: "Sempowalli", diaDe: "{d} ipan {n}",
-  xiwitl: "Xiwitl", diaAnio: "Tonalli ipan xiwitl", diaAnioVal: "{p} ipan 365",
-  portador: "Xiwtonalli",
-  grpTonalli: "Tonalli", grpVeintena: "Sempowalli", grpXiwitl: "Xiwitl",
-  numeral: "Tlapowalli", signoL: "Itoka", diaVein: "Tonalli",
-  buscar: "Xiktemo", limpiar: "Xikpopowa",
-  desde: "Kampa pewa", hasta: "Kampa tlami",
-},
-};
+/* ================= textos =================
+   Viven en i18n/es.js, i18n/en.js e i18n/nah.js (cargados antes de este script). */
+const T = window.T || {};
+const BORRADOR_NAWATL = window.BORRADOR_NAWATL !== false;
 
 /* ================= interfaz ================= */
 let lang = "es";

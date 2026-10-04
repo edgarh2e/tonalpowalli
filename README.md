@@ -11,7 +11,11 @@ en el router ni en el host: convive con el nginx de OpenMediaVault.
     ├── .env.example     plantilla; cópiala a .env
     ├── TRADUCCION.md    textos de la interfaz para revisar en nawatl
     └── site/
-        └── index.html   la página (español / nawatl)
+        ├── index.html   la página (lógica, estilos y estructura)
+        └── i18n/        textos de la interfaz, un archivo por idioma
+            ├── es.js    español (idioma base y respaldo)
+            ├── en.js    inglés
+            └── nah.js   nawatl (borrador)
 
 ## 1. Cloudflare
 
@@ -47,7 +51,8 @@ la red interna de Docker.
 
 ## Actualizar el contenido
 
-Reemplaza `site/index.html`. Caddy lo sirve de inmediato; no hace falta
+Reemplaza `site/index.html` o los textos en `site/i18n/`. Caddy sirve los
+cambios de inmediato; no hace falta
 reiniciar. Cloudflare puede tardar hasta 5 min (max-age=300) o purga la caché.
 
 ## Exportar / mover a otra máquina

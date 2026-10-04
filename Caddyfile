@@ -11,14 +11,14 @@
 	respond /healthz 200
 
 	header {
-		Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
 		Permissions-Policy "geolocation=(), camera=(), microphone=()"
 		-Server
 	}
 
-	@html path / *.html
+	@html path / *.html /i18n/*
 	header @html Cache-Control "public, max-age=300"
 
 	file_server

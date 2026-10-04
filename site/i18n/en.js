@@ -1,0 +1,38 @@
+/* Tonalpowalli — English texts.
+   Same keys as es.js; missing keys fall back to Spanish.
+   Keep {d}, {n}, {p}, {m}: the page replaces them with numbers.
+   `dias` and `meses` feed the long date format (see larga() in index.html). */
+(window.T = window.T || {}).en = {
+  lede: "Convert dates between the Gregorian calendar and the tonalpowalli: the day's tonalli, its place in the veintena, and the xiwitl that contains it.",
+  fechaGreg: "Gregorian date", prev: "Previous day", next: "Next day", hoy: "Show today",
+  veintena: "Veintena", diaDe: "Day {d} of {n}", nemNota: " — days left over from the xiwitl",
+  xiwitl: "Xiwitl", diaAnio: "Day of the xiwitl", diaAnioVal: "{p} of 365", portador: "Year bearer",
+  bisiesto: "Leap day: it repeats the previous day's tonalli and does not advance the count.",
+  puntos: "numeral {n} of 13",
+  temaAria: "Change theme", temaAuto: "Theme: auto", temaClaro: "Theme: light", temaOscuro: "Theme: dark",
+  invH: "From tonalpowalli to Gregorian",
+  invP: "Enter whatever you know about the date. With only the tonalli, the date recurs every 260 days; with the tonalli and a position in the veintena, once every 52 years.",
+  grpTonalli: "Tonalli", grpVeintena: "Veintena", grpXiwitl: "Xiwitl", grpRango: "Search between",
+  numeral: "Numeral", signoL: "Sign", diaVein: "Day", cualquiera: "—",
+  desdeAnio: "From year", hastaAnio: "To year",
+  buscar: "Search dates", limpiar: "Clear",
+  faltaDato: "Choose at least one field.",
+  rangoMal: "The range must fall between 1583 and 2400, end after it starts, and span no more than 500 years.",
+  diaNem: "Nemontemi has only 5 days.",
+  hallados: "{n} dates found.", halladosMas: "{n} dates found; showing the {m} closest to today.",
+  uno: "1 date found.",
+  ninguna: "No date matches that combination in this range. Some combinations cannot exist: the day sign is fixed by the position in the veintena together with the year bearer. If the combination is possible, widen the range.",
+  tagBis: "leap day",
+  expH: "Export a range",
+  expP: "Generate the day-by-day correlation between two dates and download it as CSV.",
+  desde: "From", hasta: "To", descargar: "Download CSV",
+  expDos: "Choose both dates.", expOrden: "The end date comes before the start date.",
+  expGrande: "The range exceeds 200,000 days.", expListo: "{n} days exported.",
+  sigH: "The twenty signs",
+  sigP: "The count advances one sign each day and returns to the start every twenty. The sign for the chosen day is highlighted.",
+  creditoLabel: "Calendrical research and reconstruction:",
+  pie1: "The count reproduced here fixes 12 March 2026 as 1 Tochtli, with the xiwitl always beginning on 12 March and 29 February repeating the previous tonalli. Other correlations exist —Caso, Jiménez Moreno, Tena— along with living counts in Tlaxcala and Milpa Alta that do not agree with one another. This page reproduces the one by Ignacio Pérez Barragán; it does not settle which is correct.",
+  pie2: "Dates are computed in the Gregorian calendar, which is why the range starts in 1583.",
+  dias: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+  meses: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+};
